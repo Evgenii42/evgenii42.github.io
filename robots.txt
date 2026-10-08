@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Sitemap: https://evgenii42.github.io/sitemap.xml
+
