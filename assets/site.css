@@ -223,6 +223,17 @@ h1 em {
   margin-top: 25px;
   margin-bottom: 0;
 }
+.credentials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  padding: 0;
+  margin: 20px 0 0;
+  list-style: none;
+}
+.credentials li { min-width: 0; flex: 1 1 100px; }
+.credentials strong { display: block; color: var(--green); font-size: 15px; }
+.credentials span { display: block; font-size: 12px; line-height: 1.45; color: var(--muted); }
 .product-map {
   background: #e9ece1;
   border: 1px solid #dce0d3;
