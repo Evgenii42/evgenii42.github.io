@@ -1,4 +1,9 @@
 document.documentElement.classList.add("js");
+// Keep long-form content close to the first screen on phones. Native details
+// remains usable without JS, and subsequent user choices survive resizing.
+if (window.matchMedia("(max-width: 700px)").matches) {
+  document.querySelector("[data-story-contents]")?.removeAttribute("open");
+}
 document.querySelectorAll("[data-step-content]").forEach((item) => {
   item.hidden = item.dataset.stepContent !== "0";
 });
