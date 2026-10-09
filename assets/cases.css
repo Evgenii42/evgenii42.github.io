@@ -43,7 +43,10 @@ body { overflow-wrap: anywhere; }
 .catalog-controls { margin-top: 30px; }
 .catalog-controls fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 .catalog-controls legend { font-weight: 650; margin-bottom: 12px; }
-.catalog-controls .filters { margin-bottom: 20px; }
+.catalog-controls .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.catalog-controls .filters button { min-width: 0; max-width: 100%; min-height: 44px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink); font-size: 14px; font-weight: 600; line-height: 1.45; white-space: normal; overflow-wrap: anywhere; }
+.catalog-controls .filters button[aria-pressed="true"] { border-color: var(--green); background: var(--green); color: var(--paper); }
+.catalog-controls .filters button[aria-pressed="false"]:hover { border-color: var(--green); background: var(--lime); }
 .catalog-controls button { min-height: 44px; }
 .catalog-state { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
 .catalog-state p { margin: 0; }
@@ -83,7 +86,6 @@ body { overflow-wrap: anywhere; }
   .cases-page, .case-page { padding-top: 30px; }
   .case-article h1 { font-size: 35px; }
   .case-narrative p { font-size: 16px; }
-  .catalog-controls .filters { gap: 7px; }
   .catalog-controls button { padding-left: 13px; padding-right: 13px; }
   .case-empty { padding: 20px; }
   .case-empty .button { white-space: normal; text-align: left; }
