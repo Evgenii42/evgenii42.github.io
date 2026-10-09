@@ -7,6 +7,14 @@ body { overflow-wrap: anywhere; }
 .hero-portrait { margin: 0; text-align: center; }
 .hero-portrait img { width: 100%; max-width: 340px; height: auto; border-radius: 50%; display: block; margin: auto; }
 .hero-portrait figcaption { margin-top: 20px; color: var(--muted); font-size: 14px; }
+.hero { align-items: start; }
+.hero-side { width: 100%; max-width: 420px; justify-self: end; }
+.hero-side .hero-portrait img { max-width: 240px; }
+.hero-side .credentials { margin: 24px 0; }
+.hero-side .context-strip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; padding: 20px 0 0; border-bottom: 0; }
+.hero-side .context-strip > p { grid-column: 1 / -1; max-width: none; width: auto; }
+.hero-side .context-strip > span { font-size: 14px; line-height: 1.45; }
+.hero-side .context-strip small { margin-top: 5px; }
 .hero-proof { margin-top: 24px; padding: 0; list-style: none; }
 .hero-proof li { border-left: 3px solid var(--green); padding-left: 15px; margin-bottom: 14px; font-size: 14px; }
 .hero-proof strong { display: block; font-size: 12px; margin-bottom: 4px; color: var(--green); }
@@ -69,6 +77,9 @@ body { overflow-wrap: anywhere; }
   .hero-portrait img { max-width: 200px; }
   .hero-portrait { margin-top: 8px; }
   .hero-portrait figcaption { margin-top: 12px; }
+  .hero-side { max-width: none; justify-self: stretch; }
+  .hero-side .hero-portrait img { max-width: 200px; }
+  .hero-side .context-strip { grid-template-columns: minmax(0, 1fr); }
   .cases-page, .case-page { padding-top: 30px; }
   .case-article h1 { font-size: 35px; }
   .case-narrative p { font-size: 16px; }
