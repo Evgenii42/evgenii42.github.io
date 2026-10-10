@@ -44,6 +44,7 @@ function revealHashTarget() {
   target.scrollIntoView({ block: "start", behavior: "auto" });
 }
 revealHashTarget();
+window.addEventListener("portfolio:ready", revealHashTarget, { once: true });
 window.addEventListener("hashchange", revealHashTarget);
 
 // No analytics request is sent. A host can later subscribe to these named events.
@@ -56,3 +57,4 @@ document.querySelectorAll("[data-download]").forEach((link) =>
     );
   }),
 );
+window.portfolioLoading?.done("site");

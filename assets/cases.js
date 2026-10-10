@@ -143,3 +143,4 @@ if (catalog) {
 } else {
   enableTopics();
 }
+window.portfolioLoading?.done("cases");
