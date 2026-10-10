@@ -157,3 +157,16 @@ body { overflow-wrap: anywhere; }
   .home-section > details > summary .home-section-toggle { grid-column: 2; grid-row: 1 / span 2; }
   .home-section-body { padding-bottom: 26px; }
 }
+
+.case-flow { margin: 32px 0; padding: 24px; background: var(--green-pale, #e9ece1); border-radius: var(--radius); }
+.case-flow h2 { font-size: 20px; margin: 0 0 16px; }
+.case-flow ol { margin: 0; padding-left: 24px; }
+.case-flow li { padding: 6px 0 6px 8px; line-height: 1.6; overflow-wrap: anywhere; }
+
+.executive-summary { padding-block: 1rem 3rem; }
+.executive-scope { max-width: 78ch; }
+.executive-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; margin-block: 1.5rem; }
+.executive-grid article { border-top: 2px solid var(--accent, #245c4c); padding-top: 1rem; min-width: 0; }
+.executive-grid h3 { margin: 0 0 .7rem; }
+.executive-result { font-weight: 650; }
+@media (max-width: 800px) { .executive-grid { grid-template-columns: 1fr; } }
