@@ -47,7 +47,7 @@ revealHashTarget();
 window.addEventListener("portfolio:ready", revealHashTarget, { once: true });
 window.addEventListener("hashchange", revealHashTarget);
 
-// No analytics request is sent. A host can later subscribe to these named events.
+// Local event retained for integrations. GA4 uses its own consent-gated listener.
 document.querySelectorAll("[data-download]").forEach((link) =>
   link.addEventListener("click", () => {
     window.dispatchEvent(
