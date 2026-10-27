@@ -1,4 +1,10 @@
 document.documentElement.classList.add("js");
+// Remove the language cookie set by older releases; URL and localStorage now carry the preference.
+try {
+  if (document.cookie.split(';').some(part => part.trim().startsWith('cv_language='))) {
+    document.cookie = 'cv_language=; Max-Age=0; Path=/; SameSite=Lax; Secure';
+  }
+} catch { /* Cookie access may be disabled; language links still work. */ }
 // Keep long-form content close to the first screen on phones. Native details
 // remains usable without JS, and subsequent user choices survive resizing.
 if (window.matchMedia("(max-width: 700px)").matches) {
@@ -13,9 +19,6 @@ document.querySelectorAll("[data-language-link]").forEach((link) => {
     } catch {
       /* Explicit URL still works. */
     }
-    try {
-      document.cookie = `cv_language=${locale}; Path=/; Max-Age=31536000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
-    } catch { /* The explicit language URL works when cookies are blocked. */ }
     const destination = new URL(link.href);
     // The cases module carries validated catalog context in href, including
     // links opened in a new tab. Other pages preserve their ordinary query.

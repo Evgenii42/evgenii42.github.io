@@ -1008,6 +1008,10 @@ summary > span {
     transition: none !important;
   }
 }
+.privacy-page { max-width: 48rem; margin: 4rem auto; line-height: 1.65; }
+.privacy-page h1 { margin-bottom: 1.5rem; }
+.privacy-page p { margin: 0 0 1.25rem; }
+.privacy-page a { text-decoration: underline; }
 @media print {
   body {
     background: white;

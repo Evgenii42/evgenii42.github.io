@@ -1,4 +1,6 @@
-export const CONSENT_KEY = 'portfolio_analytics_v1';
+export const CONSENT_KEY = 'portfolio_google_analytics_v1';
+const LEGACY_CONSENT_KEY = 'portfolio_analytics_v1';
+const SESSION_DENIAL_KEY = 'portfolio_google_analytics_denied_session';
 export const CONSENT_TTL = 180 * 24 * 60 * 60 * 1000;
 const GA_ID_PATTERN = /^G-[A-Z0-9]+$/;
 const UMAMI_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -21,7 +23,8 @@ export function permitted(config, location, navigator, consent) {
 export function pageContext(config, location) {
   const path = config.paths.includes(location.pathname) ? location.pathname : '/';
   const locale = (config.languages || ['ru', 'en']).find(lang => path.startsWith(`/${lang}/`)) || 'unknown';
-  const caseId = /^\/(?:ru|en)\/cases\/([^/]+)\/$/.exec(path)?.[1];
+  const segments = path.split('/');
+  const caseId = (config.languages || ['ru', 'en']).includes(segments[1]) && segments[2] === 'cases' && segments.length === 5 ? segments[3] : undefined;
   return { page_location: `https://${config.hostname}${path}`, page_path: path, content_language: locale,
     ...(config.cases.includes(caseId) ? { case_id: caseId } : {}) };
 }
@@ -71,6 +74,7 @@ export function cleanEvent(config, name, input = {}) {
 
 export function umamiPayload(config, location, referrer, name, input = {}) {
   if (!UMAMI_ID_PATTERN.test(config.umamiWebsiteId || '')) return null;
+  if (location.hostname !== config.hostname || location.protocol !== 'https:') return null;
   if (!config.paths.includes(location.pathname)) return null;
   const context = pageContext(config, location);
   const campaign = safeCampaign(location.search);
@@ -94,41 +98,41 @@ if (meta) {
 function initialize(config) {
   const hasGa = GA_ID_PATTERN.test(config.id || '');
   const hasUmami = UMAMI_ID_PATTERN.test(config.umamiWebsiteId || '');
-  if ((!hasGa && !hasUmami) || location.hostname !== config.hostname || location.protocol !== 'https:') return;
+  if ((!hasGa && !hasUmami) || location.hostname !== config.hostname || location.protocol !== 'https:' || !config.paths.includes(location.pathname)) return;
   const ru = document.documentElement.lang === 'ru';
   const text = ru ? {
-    settings: 'Настройки статистики', title: 'Статистика посещений',
-    active: 'Umami считает посещения без cookies. Google Analytics включается только с разрешения.',
-    activeDetail: 'Umami без cookies считает страницы, просмотры кейсов и клики по PDF и контактам. Если разрешить оба счетчика, Google Analytics будет измерять те же действия с cookies и техническими данными посещения.',
-    deniedDetail: 'Если включить только Umami, он будет считать страницы, просмотры кейсов и клики по PDF и контактам без cookies. Если разрешить оба счетчика, Google Analytics будет измерять те же действия с cookies и техническими данными посещения.',
-    basic: 'Работает только счетчик Umami без cookies. Google Analytics отключен.',
-    both: 'Оба счетчика включены. Google Analytics использует cookies и технические данные посещения.',
-    off: 'Статистика посещений отключена.',
-    gaOnly: 'Google Analytics включается только с разрешения и использует cookies и технические данные посещения.',
-    gaOnlyDetail: 'Если разрешить Google Analytics, он будет считать страницы, просмотры кейсов и клики по PDF и контактам с cookies и техническими данными посещения.',
-    gaOn: 'Google Analytics включен и использует cookies и технические данные посещения.',
-    umamiOn: 'Umami считает посещения без cookies.',
-    basicAction: 'Только Umami', accept: hasUmami ? 'Разрешить оба счетчика' : 'Разрешить Google Analytics',
-    reject: 'Отключить всю статистику', close: 'Закрыть',
-    privacy: 'Как Google использует данные', blocked: 'Сигнал приватности браузера отключает аналитику.',
+    settings: 'Настройки Google Analytics', title: 'Google Analytics',
+    notice: 'Google Analytics включается только с вашего разрешения.',
+    detail: 'После разрешения Google Analytics использует cookies и технические данные посещения для подсчета страниц, просмотров кейсов и кликов по PDF и контактам.',
+    on: 'Google Analytics включен.', off: 'Google Analytics выключен.',
+    accept: 'Разрешить Google Analytics', reject: 'Отключить Google Analytics', rejectOff: 'Не включать Google Analytics', close: 'Закрыть',
+    privacy: 'Как Google использует данные', blocked: 'Сигнал приватности браузера блокирует Google Analytics.',
   } : {
-    settings: 'Statistics settings', title: 'Visitor statistics',
-    active: 'Umami counts visits without cookies. Google Analytics runs only with permission.',
-    activeDetail: 'Umami counts pages, case views, and clicks on PDFs and contacts without cookies. If you allow both counters, Google Analytics measures the same actions using cookies and technical visit data.',
-    deniedDetail: 'If you enable Umami only, it will count pages, case views, and clicks on PDFs and contacts without cookies. If you allow both counters, Google Analytics measures the same actions using cookies and technical visit data.',
-    basic: 'Only Umami runs without cookies. Google Analytics is off.',
-    both: 'Both counters are on. Google Analytics uses cookies and technical visit data.',
-    off: 'Visitor statistics are off.',
-    gaOnly: 'Google Analytics runs only with permission and uses cookies and technical visit data.',
-    gaOnlyDetail: 'If you allow Google Analytics, it will count pages, case views, and clicks on PDFs and contacts using cookies and technical visit data.',
-    gaOn: 'Google Analytics is on and uses cookies and technical visit data.',
-    umamiOn: 'Umami counts visits without cookies.',
-    basicAction: 'Umami only', accept: hasUmami ? 'Allow both counters' : 'Allow Google Analytics',
-    reject: 'Turn off all statistics', close: 'Close',
-    privacy: 'How Google uses data', blocked: 'Your browser privacy signal disables analytics.',
+    settings: 'Google Analytics settings', title: 'Google Analytics',
+    notice: 'Google Analytics runs only with your permission.',
+    detail: 'If enabled, Google Analytics uses cookies and technical visit data to count pages, case views, and clicks on PDFs and contacts.',
+    on: 'Google Analytics is on.', off: 'Google Analytics is off.',
+    accept: 'Allow Google Analytics', reject: 'Turn off Google Analytics', rejectOff: 'Keep Google Analytics off', close: 'Close',
+    privacy: 'How Google uses data', blocked: 'Your browser privacy signal blocks Google Analytics.',
   };
   let consent = null;
-  try { consent = readConsent(localStorage.getItem(CONSENT_KEY)); } catch { /* Session choice works. */ }
+  let legacyUmamiDenied = false;
+  try {
+    const previousRaw = localStorage.getItem(LEGACY_CONSENT_KEY);
+    const currentRaw = localStorage.getItem(CONSENT_KEY);
+    const previous = readConsent(previousRaw);
+    const current = readConsent(currentRaw);
+    legacyUmamiDenied = previous === 'denied';
+    consent = current || (previous === 'granted' ? 'granted' : null);
+    // A stale grant must not survive a browser that can read storage but cannot save a refusal.
+    if (consent === 'granted') {
+      try {
+        if (current === 'granted') localStorage.setItem(CONSENT_KEY, currentRaw);
+        else localStorage.setItem(LEGACY_CONSENT_KEY, previousRaw);
+      } catch { consent = null; }
+    }
+  } catch { /* Session choice works. */ }
+  try { if (sessionStorage.getItem(SESSION_DENIAL_KEY) === '1') consent = 'denied'; } catch { /* Session storage is optional. */ }
   let started = false;
   let gaActiveMs = 0;
   let umamiActiveMs = 0;
@@ -141,19 +145,20 @@ function initialize(config) {
   const context = pageContext(config, location);
   const privacyBlocked = () => navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true;
   const blockedBySignal = privacyBlocked();
+  let privacySignalSeen = blockedBySignal;
 
   function sendUmami(name, input) {
-    if (privacyBlocked() || consent === 'denied' || !hasUmami) return;
+    if (privacyBlocked() || legacyUmamiDenied || !hasUmami) return;
     const payload = umamiPayload(config, location, document.referrer, name, input);
     if (!payload) return;
     if (umamiReady) window.umami.track(payload);
     else if (umamiQueue.length < UMAMI_QUEUE_MAX) umamiQueue.push(payload);
   }
   function startUmami() {
-    if (umamiStarted || privacyBlocked() || consent === 'denied' || !umamiPayload(config, location, document.referrer, 'page_view')) return;
+    if (umamiStarted || privacyBlocked() || legacyUmamiDenied || !umamiPayload(config, location, document.referrer, 'page_view')) return;
     umamiStarted = true;
     window.portfolioUmamiBeforeSend = (type, payload) => {
-      if (privacyBlocked() || consent === 'denied') return null;
+      if (privacyBlocked() || legacyUmamiDenied) return null;
       if (type !== 'event' || payload?.website !== config.umamiWebsiteId || payload?.hostname !== config.hostname) return null;
       const name = typeof payload.name === 'string' ? payload.name : 'page_view';
       return umamiPayload(config, location, document.referrer, name, payload.data);
@@ -169,7 +174,7 @@ function initialize(config) {
     script.onload = () => {
       if (!window.umami?.track) return;
       umamiReady = true;
-      if (privacyBlocked() || consent === 'denied') { umamiQueue.length = 0; return; }
+      if (privacyBlocked() || legacyUmamiDenied) { umamiQueue.length = 0; return; }
       sendUmami('page_view');
       if (context.case_id) sendUmami('case_view', { case_id: context.case_id });
       for (const item of umamiQueue.splice(0)) window.umami.track(item);
@@ -178,7 +183,7 @@ function initialize(config) {
   }
 
   function send(name, input) {
-    if (!started || !permitted(config, location, navigator, consent)) return;
+    if (!started || !permitted(config, location, navigator, consent) || !config.paths.includes(location.pathname)) return;
     const params = cleanEvent(config, name, input);
     if (params) window.gtag('event', name, { ...context, ...params, send_to: config.id });
   }
@@ -209,103 +214,105 @@ function initialize(config) {
     if (context.case_id) send('case_view', { case_id: context.case_id });
   }
   function removeCookies() {
-    for (const part of document.cookie.split(';')) {
-      const key = part.trim().split('=')[0];
-      if (key === '_ga' || key.startsWith('_ga_')) {
-        document.cookie = `${key}=; Max-Age=0; Path=/; SameSite=Lax; Secure`;
-        document.cookie = `${key}=; Max-Age=0; Path=/; Domain=${config.hostname}; SameSite=Lax; Secure`;
-        document.cookie = `${key}=; Max-Age=0; Path=/; Domain=.${config.hostname}; SameSite=Lax; Secure`;
+    try {
+      for (const part of document.cookie.split(';')) {
+        const key = part.trim().split('=')[0];
+        if (key === '_ga' || key.startsWith('_ga_')) {
+          document.cookie = `${key}=; Max-Age=0; Path=/; SameSite=Lax; Secure`;
+          document.cookie = `${key}=; Max-Age=0; Path=/; Domain=${config.hostname}; SameSite=Lax; Secure`;
+          document.cookie = `${key}=; Max-Age=0; Path=/; Domain=.${config.hostname}; SameSite=Lax; Secure`;
+        }
       }
-    }
+    } catch { /* Cookie access can be disabled; do not interrupt CV or analytics choices. */ }
   }
-  const footer = document.createElement('div'); footer.className = 'analytics-footer';
-  const notice = document.createElement('p');
-  const noticeLabel = document.createElement('span'); noticeLabel.setAttribute('aria-live', 'polite'); notice.append(noticeLabel);
-  if (hasUmami) {
-    const policy = document.createElement('a');
-    policy.href = 'https://umami.is/privacy'; policy.textContent = ru ? 'О данных Umami' : 'Umami privacy';
-    policy.target = '_blank'; policy.rel = 'noopener noreferrer'; notice.append(policy);
-  }
-  const settings = document.createElement('button');
-  settings.type = 'button'; settings.className = 'analytics-settings'; settings.textContent = text.settings;
-  settings.setAttribute('aria-haspopup', 'dialog');
-  const scrim = document.createElement('div'); scrim.className = 'analytics-scrim'; scrim.hidden = true;
-  const panel = document.createElement('section');
-  panel.className = 'analytics-panel'; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-labelledby', 'analytics-title'); panel.setAttribute('aria-describedby', 'analytics-description');
-  const heading = document.createElement('h2'); heading.id = 'analytics-title'; heading.textContent = text.title; heading.tabIndex = -1;
-  const description = document.createElement('p'); description.id = 'analytics-description';
-  const privacy = document.createElement('a'); privacy.href = 'https://policies.google.com/technologies/partner-sites';
-  privacy.textContent = text.privacy; privacy.target = '_blank'; privacy.rel = 'noopener noreferrer';
-  const actions = document.createElement('div'); actions.className = 'analytics-actions';
-  const basic = document.createElement('button'); basic.type = 'button'; basic.textContent = text.basicAction; basic.disabled = blockedBySignal; basic.hidden = !hasUmami;
-  const accept = document.createElement('button'); accept.type = 'button'; accept.textContent = text.accept; accept.disabled = blockedBySignal; accept.hidden = !hasGa;
-  const reject = document.createElement('button'); reject.type = 'button'; reject.textContent = text.reject;
-  const close = document.createElement('button'); close.type = 'button'; close.textContent = text.close;
-  privacy.hidden = !hasGa;
-  actions.append(basic, accept, reject, close); panel.append(heading, description, privacy, actions);
-  footer.append(notice, settings);
-  const main = document.querySelector('main');
-  if (main) document.body.insertBefore(footer, main);
-  else document.body.append(footer);
-  document.body.append(scrim, panel);
-  const background = [...document.body.children].filter(item => item !== scrim && item !== panel);
-  const priorInert = new Map();
-  function updateCopy() {
-    const status = privacyBlocked() ? text.blocked : consent === 'denied' ? text.off
-      : hasUmami && hasGa ? (consent === 'granted' ? text.both : consent === 'basic' ? text.basic : text.active)
-        : hasUmami ? text.umamiOn : consent === 'granted' ? text.gaOn : text.gaOnly;
-    noticeLabel.textContent = `${status} `;
-    const detail = hasUmami ? (consent === 'denied' ? text.deniedDetail : text.activeDetail) : text.gaOnlyDetail;
-    description.textContent = privacyBlocked() ? text.blocked
-      : hasGa && consent !== 'granted' ? `${status} ${detail}` : status;
-  }
-  function show(value, focus = false) {
-    updateCopy();
-    panel.hidden = !value; scrim.hidden = !value; settings.setAttribute('aria-expanded', String(value));
-    if (value) {
-      for (const item of background) { if (!priorInert.has(item)) priorInert.set(item, item.inert); item.inert = true; }
-    } else {
-      for (const [item, wasInert] of priorInert) item.inert = wasInert;
-      priorInert.clear();
+  let updateCopy = () => {};
+  let closePanel = () => {};
+  if (hasGa) {
+    const footer = document.createElement('div'); footer.className = 'analytics-footer';
+    const notice = document.createElement('p');
+    const noticeLabel = document.createElement('span'); noticeLabel.setAttribute('aria-live', 'polite'); notice.append(noticeLabel);
+    const settings = document.createElement('button');
+    settings.type = 'button'; settings.className = 'analytics-settings'; settings.textContent = text.settings;
+    settings.setAttribute('aria-haspopup', 'dialog');
+    const scrim = document.createElement('div'); scrim.className = 'analytics-scrim'; scrim.hidden = true;
+    const panel = document.createElement('section');
+    panel.className = 'analytics-panel'; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-labelledby', 'analytics-title'); panel.setAttribute('aria-describedby', 'analytics-description');
+    const heading = document.createElement('h2'); heading.id = 'analytics-title'; heading.textContent = text.title; heading.tabIndex = -1;
+    const description = document.createElement('p'); description.id = 'analytics-description';
+    const privacy = document.createElement('a'); privacy.href = 'https://policies.google.com/technologies/partner-sites';
+    privacy.textContent = text.privacy; privacy.target = '_blank'; privacy.rel = 'noopener noreferrer';
+    const actions = document.createElement('div'); actions.className = 'analytics-actions';
+    const accept = document.createElement('button'); accept.type = 'button'; accept.textContent = text.accept; accept.disabled = blockedBySignal;
+    const reject = document.createElement('button'); reject.type = 'button'; reject.textContent = text.reject;
+    const close = document.createElement('button'); close.type = 'button'; close.textContent = text.close;
+    actions.append(accept, reject, close); panel.append(heading, description, privacy, actions);
+    footer.append(notice, settings);
+    const main = document.querySelector('main');
+    if (main) document.body.insertBefore(footer, main);
+    else document.body.append(footer);
+    document.body.append(scrim, panel);
+    const background = [...document.body.children].filter(item => item !== scrim && item !== panel);
+    const priorInert = new Map();
+    updateCopy = () => {
+      noticeLabel.textContent = privacyBlocked() ? text.blocked : consent === 'granted' ? text.on : consent === 'denied' ? text.off : text.notice;
+      description.textContent = privacyBlocked() ? text.blocked : `${noticeLabel.textContent} ${text.detail}`;
+      accept.disabled = privacyBlocked();
+      reject.textContent = consent === 'granted' ? text.reject : text.rejectOff;
+    };
+    function show(value, focus = false) {
+      updateCopy();
+      panel.hidden = !value; scrim.hidden = !value; settings.setAttribute('aria-expanded', String(value));
+      if (value) {
+        for (const item of background) { if (!priorInert.has(item)) priorInert.set(item, item.inert); item.inert = true; }
+      } else {
+        for (const [item, wasInert] of priorInert) item.inert = wasInert;
+        priorInert.clear();
+      }
+      if (focus) (value ? heading : settings).focus();
     }
-    if (focus) (value ? heading : settings).focus();
+    closePanel = () => { if (!panel.hidden) show(false, true); };
+    function choose(value) {
+      const hadGa = started;
+      consent = value;
+      let persisted = true;
+      try { localStorage.setItem(CONSENT_KEY, JSON.stringify({ value, at: Date.now() })); } catch { persisted = false; }
+      try {
+        if (value === 'denied') sessionStorage.setItem(SESSION_DENIAL_KEY, '1');
+        else sessionStorage.removeItem(SESSION_DENIAL_KEY);
+      } catch { /* The current document still honors the choice. */ }
+      if (!persisted && value === 'denied') {
+        try { localStorage.removeItem(CONSENT_KEY); localStorage.removeItem(LEGACY_CONSENT_KEY); } catch { /* A stale grant is rejected by the write check on next load. */ }
+      }
+      show(false, true);
+      if (value !== 'granted') {
+        window[`ga-disable-${config.id}`] = true;
+        removeCookies();
+      }
+      if (persisted && value === 'denied' && hadGa) location.reload();
+      else if (value === 'granted') start();
+    }
+    settings.addEventListener('click', () => show(panel.hidden, true));
+    accept.addEventListener('click', () => { window[`ga-disable-${config.id}`] = false; choose('granted'); });
+    reject.addEventListener('click', () => choose('denied'));
+    close.addEventListener('click', () => show(false, true));
+    scrim.addEventListener('click', () => show(false, true));
+    panel.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { show(false, true); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = [privacy, accept, reject, close].filter(item => !item.disabled);
+      if (event.shiftKey && (document.activeElement === heading || document.activeElement === focusable[0])) {
+        event.preventDefault(); close.focus();
+      } else if (!event.shiftKey && document.activeElement === close) {
+        event.preventDefault(); focusable[0].focus();
+      }
+    });
+    settings.setAttribute('aria-controls', 'analytics-panel'); panel.id = 'analytics-panel';
+    show(false);
   }
-  function choose(value) {
-    const hadGa = started;
-    const hadUmami = umamiStarted;
-    consent = value;
-    let persisted = true;
-    try { localStorage.setItem(CONSENT_KEY, JSON.stringify({ value, at: Date.now() })); } catch { persisted = false; }
-    show(false, true);
-    if (value !== 'granted') {
-      window[`ga-disable-${config.id}`] = true;
-      removeCookies();
-    }
-    if (value === 'denied') umamiQueue.length = 0;
-    if (persisted && ((value === 'denied' && (hadGa || hadUmami)) || (value === 'basic' && hadGa))) location.reload();
-    else if (value !== 'denied') {
-      startUmami();
-      if (value === 'granted') start();
-    }
+  if (!permitted(config, location, navigator, consent)) {
+    if (hasGa) window[`ga-disable-${config.id}`] = true;
+    removeCookies();
   }
-  settings.addEventListener('click', () => show(panel.hidden, true));
-  basic.addEventListener('click', () => choose('basic'));
-  accept.addEventListener('click', () => { window[`ga-disable-${config.id}`] = false; choose('granted'); });
-  reject.addEventListener('click', () => choose('denied'));
-  close.addEventListener('click', () => show(false, true));
-  scrim.addEventListener('click', () => show(false, true));
-  panel.addEventListener('keydown', event => {
-    if (event.key === 'Escape') { show(false, true); return; }
-    if (event.key !== 'Tab') return;
-    const focusable = [privacy, basic, accept, reject, close].filter(item => !item.hidden && !item.disabled);
-    if (event.shiftKey && (document.activeElement === heading || document.activeElement === focusable[0])) {
-      event.preventDefault(); close.focus();
-    } else if (!event.shiftKey && document.activeElement === close) {
-      event.preventDefault(); focusable[0].focus();
-    }
-  });
-  settings.setAttribute('aria-controls', 'analytics-panel'); panel.id = 'analytics-panel';
-  show(false);
   startUmami();
   start();
 
@@ -314,11 +321,13 @@ function initialize(config) {
     const target = event.target.closest?.('a, button');
     if (!target) return;
     if (target.matches('[data-download]')) record('download_cv', { variant: target.dataset.download });
-    else if (target.matches('a[href]')) {
+    else if (target.matches('a[href][data-contact]')) {
       const url = new URL(target.href, location.href);
-      const channel = url.protocol === 'mailto:' ? 'email' : url.protocol === 'tel:' ? 'phone' :
-        url.hostname === 't.me' ? 'telegram' : ['linkedin.com', 'www.linkedin.com'].includes(url.hostname) ? 'linkedin' : null;
-      if (channel) record('contact_click', { channel });
+      const channel = target.dataset.contact;
+      const valid = channel === 'email' ? url.protocol === 'mailto:' : channel === 'phone' ? url.protocol === 'tel:' :
+        channel === 'telegram' ? url.hostname === 't.me' && url.protocol === 'https:' :
+        channel === 'linkedin' ? ['linkedin.com', 'www.linkedin.com'].includes(url.hostname) && url.protocol === 'https:' : false;
+      if (valid) record('contact_click', { channel });
     } else if (target.matches('[data-case-experience]') && target.getAttribute('aria-pressed') !== 'true') record('case_filter', { dimension: 'experience', value: target.dataset.caseExperience });
     else if (target.matches('[data-case-topic]') && target.getAttribute('aria-pressed') !== 'true') record('case_filter', { dimension: 'topic', value: target.dataset.caseTopic });
     else if (target.matches('[data-case-reset]')) {
@@ -335,11 +344,20 @@ function initialize(config) {
   });
   // Count visible time independently for each active counter.
   function tick() {
+    const signalBlocked = privacyBlocked();
+    if (signalBlocked !== privacySignalSeen) {
+      privacySignalSeen = signalBlocked;
+      if (signalBlocked) {
+        if (hasGa) window[`ga-disable-${config.id}`] = true;
+        removeCookies();
+      } else if (hasGa && started && consent === 'granted') window[`ga-disable-${config.id}`] = false;
+      updateCopy();
+    }
     const now = performance.now();
     const elapsed = Math.max(0, Math.min(now - lastTick, 1000));
     if (document.visibilityState === 'visible') {
       if (started && permitted(config, location, navigator, consent)) gaActiveMs += elapsed;
-      if (umamiStarted && consent !== 'denied' && !privacyBlocked()) umamiActiveMs += elapsed;
+      if (umamiStarted && !legacyUmamiDenied && !privacyBlocked()) umamiActiveMs += elapsed;
     }
     lastTick = now;
     if (context.case_id && !umamiEngaged && umamiActiveMs >= CASE_ENGAGEMENT_MS) {
@@ -353,17 +371,14 @@ function initialize(config) {
   document.addEventListener('visibilitychange', () => { lastTick = performance.now(); });
   window.addEventListener('storage', event => {
     if (event.key !== CONSENT_KEY) return;
-    consent = readConsent(event.newValue) || 'denied';
+    consent = readConsent(event.newValue);
     updateCopy();
     if (consent !== 'granted') { window[`ga-disable-${config.id}`] = true; removeCookies(); }
-    if ((consent === 'denied' && (started || umamiStarted)) || (consent === 'basic' && started)) {
-      umamiQueue.length = 0;
-      if (event.newValue) location.reload();
-    }
-    else if (consent === 'granted' || consent === 'basic') {
-      if (!panel.hidden) show(false, true);
-      startUmami();
-      if (consent === 'granted') { window[`ga-disable-${config.id}`] = false; start(); }
+    if (consent !== 'granted' && started) location.reload();
+    else if (consent === 'granted') {
+      closePanel();
+      window[`ga-disable-${config.id}`] = false;
+      start();
     }
   });
 }

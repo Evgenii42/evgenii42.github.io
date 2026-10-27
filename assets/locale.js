@@ -16,14 +16,6 @@ export function countryLocale(country) {
   return country.toUpperCase() === "RU" ? "ru" : null;
 }
 
-export function readPreferenceCookie(cookie = "") {
-  const entry = cookie
-    .split(";")
-    .map((x) => x.trim())
-    .find((x) => x.startsWith("cv_language="));
-  return validLocale(entry?.slice("cv_language=".length));
-}
-
 export function selectLocale({ saved, country, languages } = {}) {
   return (
     validLocale(saved) || countryLocale(country) || preferredLocale(languages)
