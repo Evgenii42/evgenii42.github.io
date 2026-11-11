@@ -1,0 +1,7 @@
+# Evgenii Zaitsev / Евгений Зайцев
+
+> Public product management CV and first-person case studies.
+
+## Portfolio
+- [en](https://evgenii42.github.io/en/llms.txt)
+- [ru](https://evgenii42.github.io/ru/llms.txt)
