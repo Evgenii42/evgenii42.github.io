@@ -1,0 +1,76 @@
+/* Content hierarchy shared by the bilingual portfolio. */
+.hero { grid-template-columns: minmax(0, 1.16fr) minmax(0, 1fr); gap: 60px; padding-block: 48px; align-items: start; }
+.hero-copy { max-width: 680px; }
+.hero h1 { font-size: clamp(38px, 4.3vw, 60px); margin-bottom: 26px; }
+.hero .lead { max-width: 640px; margin-bottom: 0; }
+.hero .eyebrow { margin-bottom: 24px; }
+.hero-name { display: none; }
+.hero-meta { max-width: 65ch; margin-top: 22px; line-height: 1.6; }
+.help-section { padding-block: 24px 48px; }
+.strength-links { display: block; margin-block: 0 32px; }
+.strength-links > .need-label { font-size: 21px; font-weight: 600; margin-bottom: 18px; }
+.strength-links .faq-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.strength-links .faq-links a { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 20px; border: 1px solid var(--line); border-radius: 14px; text-decoration: none; font-size: 15px; line-height: 1.5; min-height: 64px; }
+.strength-links .faq-links a:hover { background: #e9ece1; border-color: var(--green); }
+.strength-links a span { flex-shrink: 0; }
+.hero-copy .strength-links { margin-block: 28px 0; }
+.hero-copy .strength-links > .need-label { font-size: 16px; margin-bottom: 12px; }
+.hero-copy .strength-links .faq-links { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; }
+.hero-copy .strength-links .faq-links a { padding: 12px 14px; min-height: 50px; font-size: 14px; border-radius: 10px; }
+.hero-copy .leadership-proof { margin-block: 28px 0; padding: 20px 24px; font-size: 15px; }
+.leadership-proof { max-width: 760px; margin-block: 28px; padding: 24px 28px; background: #e9ece1; border-radius: 16px; }
+.leadership-proof p { margin-bottom: 14px; line-height: 1.7; }
+.leadership-proof .leadership-line { margin-bottom: 12px; }
+.leadership-proof > a { display: inline-block; padding-block: 5px; font-size: 14px; }
+.work-approach, .cv-context { max-width: 900px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-top: 24px; }
+.work-approach > summary, .cv-context > summary { display: flex; align-items: center; justify-content: space-between; gap: 20px; cursor: pointer; padding: 18px 8px; font-size: 15px; font-weight: 600; list-style: none; }
+.work-approach > summary::after, .cv-context > summary::after { content: "+"; color: var(--green); font-size: 22px; line-height: 1; }
+.work-approach[open] > summary::after, .cv-context[open] > summary::after { content: "−"; }
+.work-approach > .employer-needs { margin-top: 12px; }
+.cv-context-body { padding: 0 8px 20px; }
+.cv-context-body .leadership-proof { margin-top: 8px; }
+.hero-keywords, .cv-keywords, .cv-tools { max-width: 85ch; line-height: 1.8; margin-block: 16px; }
+.cv-intro { padding-top: 48px; }
+.cv-intro .lead { max-width: 760px; }
+.cv-intro .actions { margin-top: 24px; margin-bottom: 22px; gap: 12px 24px; }
+.cv-intro .actions > .text-link { padding-block: 10px; }
+.cv-page > [data-availability] { margin-bottom: 32px; line-height: 1.7; }
+.cv-overview { padding-bottom: 28px; }
+.cv-overview .strength-links { margin-bottom: 24px; }
+.executive-scope, .executive-summary > .source-note { max-width: 85ch; }
+.creative-example { max-width: 900px; margin-block: 32px 24px; padding: 24px 28px; border: 1px solid var(--line); border-radius: 16px; }
+.creative-example h3 { font-size: 20px; margin-bottom: 12px; }
+.creative-example p { max-width: 78ch; line-height: 1.75; margin-bottom: 16px; }
+.creative-example .faq-links { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 28px; }
+.creative-example .faq-links a { padding-block: 8px; font-size: 14px; }
+@media (max-width: 1000px) {
+ .hero-name { display: block; }
+}
+@media (max-width: 900px) {
+ .strength-links .faq-links { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+ .hero { gap: 36px; grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 700px) {
+ .hero { grid-template-columns: minmax(0, 1fr); padding-block: 32px; gap: 28px; }
+ .hero-name { display: block; font-size: 18px; margin-bottom: 12px; }
+ .hero h1 { font-size: clamp(34px, 8.5vw, 46px); line-height: 1.12; margin-bottom: 22px; }
+ .hero .eyebrow { font-size: 11px; margin-bottom: 22px; }
+ .hero .actions { margin-top: 24px; }
+ .hero-meta { margin-top: 20px; }
+ .help-section { padding-block: 20px 32px; }
+ .strength-links .faq-links { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+ .strength-links .faq-links a { min-height: 54px; padding: 14px 16px; }
+ .hero-copy .strength-links .faq-links { grid-template-columns: minmax(0, 1fr); }
+ .leadership-proof, .creative-example { padding: 20px; margin-block: 24px; }
+ .cv-intro { padding-top: 30px; }
+ .cv-intro h1 { margin-block: 16px 22px; }
+ .cv-intro .actions { gap: 12px 20px; }
+ .cv-page > [data-availability] { margin-bottom: 24px; }
+ .cv-overview { padding-bottom: 20px; }
+}
+@media print {
+ .hero-name { display: block; }
+ .hero { display: block; }
+ .strength-links .faq-links { display: block; }
+ .strength-links .faq-links a { border: 0; padding: 6px 0; min-height: 0; }
+}
