@@ -44,17 +44,66 @@ export function safeReferrer(value) {
   return '';
 }
 
+export const CAMPAIGN_SOURCES = Object.freeze(['hh', 'getmatch', 'habr', 'linkedin', 'telegram', 'hirify', 'geekjob', 'email', 'company_site', 'qa']);
+export const CAMPAIGN_MEDIA = Object.freeze(['application', 'profile', 'post', 'referral', 'message', 'test']);
+
 export function safeCampaign(search) {
-  const sources = ['hh', 'getmatch', 'habr', 'linkedin', 'telegram', 'company_site'];
-  const media = ['application', 'profile', 'post', 'referral', 'message'];
   try {
     const params = new URLSearchParams(search || '');
     if (params.getAll('utm_source').length !== 1 || params.getAll('utm_medium').length !== 1) return {};
     const source = params.get('utm_source');
     const medium = params.get('utm_medium');
-    return sources.includes(source) && media.includes(medium)
+    return CAMPAIGN_SOURCES.includes(source) && CAMPAIGN_MEDIA.includes(medium) && (source === 'qa') === (medium === 'test')
       ? { campaign_source: source, campaign_medium: medium } : {};
   } catch { return {}; }
+}
+
+// Carry the approved pair through this navigation without browser storage.
+export function campaignHref(config, location, href) {
+  const campaign = safeCampaign(location.search);
+  if (!campaign.campaign_source || typeof href !== 'string' || !href.trim() || href.trim().startsWith('#')) return href;
+  try {
+    const current = new URL(location.href || `${location.protocol}//${location.host || location.hostname}${location.pathname}${location.search || ''}${location.hash || ''}`);
+    const target = new URL(href, current);
+    if (current.protocol !== 'https:' || current.hostname !== config.hostname || !config.paths.includes(current.pathname)) return href;
+    if (target.origin !== current.origin || target.username || target.password || !config.paths.includes(target.pathname)) return href;
+    // Preserve explicit destination campaigns, including malformed tags, rather than silently relabeling them.
+    if (target.searchParams.has('utm_source') || target.searchParams.has('utm_medium')) return href;
+    target.searchParams.set('utm_source', campaign.campaign_source);
+    target.searchParams.set('utm_medium', campaign.campaign_medium);
+    return target.href;
+  } catch { return href; }
+}
+
+export function installCampaignLinks(config, location, document, Observer = globalThis.MutationObserver) {
+  if (location.hostname !== config.hostname || location.protocol !== 'https:' || !config.paths.includes(location.pathname) || !safeCampaign(location.search).campaign_source) return;
+  const decorate = anchor => {
+    if (anchor.hasAttribute?.('download')) return;
+    const before = anchor.getAttribute('href');
+    const after = campaignHref(config, location, before);
+    if (after !== before) anchor.setAttribute('href', after);
+  };
+  const scan = node => {
+    if (node?.matches?.('a[href]')) decorate(node);
+    node?.querySelectorAll?.('a[href]').forEach(decorate);
+  };
+  scan(document);
+  const follow = event => {
+    const anchor = event.target?.closest?.('a[href]');
+    if (anchor) decorate(anchor);
+  };
+  for (const name of ['click', 'auxclick', 'contextmenu']) document.addEventListener(name, follow, true);
+  const observer = typeof Observer === 'function' ? new Observer(records => {
+    for (const record of records) {
+      if (record.type === 'attributes' && record.target.matches?.('a[href]')) decorate(record.target);
+      if (record.type === 'childList') record.addedNodes.forEach(scan);
+    }
+  }) : null;
+  observer?.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['href'] });
+  return () => {
+    observer?.disconnect();
+    for (const name of ['click', 'auxclick', 'contextmenu']) document.removeEventListener(name, follow, true);
+  };
 }
 
 export function cleanEvent(config, name, input = {}) {
@@ -99,6 +148,7 @@ function initialize(config) {
   const hasGa = GA_ID_PATTERN.test(config.id || '');
   const hasUmami = UMAMI_ID_PATTERN.test(config.umamiWebsiteId || '');
   if ((!hasGa && !hasUmami) || location.hostname !== config.hostname || location.protocol !== 'https:' || !config.paths.includes(location.pathname)) return;
+  installCampaignLinks(config, location, document);
   const ru = document.documentElement.lang === 'ru';
   const text = ru ? {
     settings: 'Настройки Google Analytics', title: 'Google Analytics',
